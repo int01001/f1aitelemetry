@@ -1,0 +1,68 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@import "tailwindcss";
+
+@theme {
+  --color-f1dark: #0B0B0B;
+  --color-f1red: #E10600;
+  --font-sans: 'Inter', sans-serif;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-f1dark);
+    color: white;
+    font-family: var(--font-sans);
+    overflow-x: hidden;
+  }
+}
+
+@utility glass {
+  background-color: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+}
+
+@utility neon-glow {
+  box-shadow: 0 0 10px var(--color-f1red), 0 0 20px var(--color-f1red), 0 0 40px var(--color-f1red);
+}
+
+/* Background Motion Effects */
+@keyframes scanline {
+  0% { transform: translateY(-100%); opacity: 0; }
+  50% { opacity: 0.1; }
+  100% { transform: translateY(100vh); opacity: 0; }
+}
+
+.scan-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(to bottom, transparent, rgba(225, 6, 0, 0.1) 50%, transparent);
+  animation: scanline 6s linear infinite;
+  pointer-events: none;
+  z-index: 50;
+}
+
+@keyframes pulseBg {
+  0% { background-color: rgba(225, 6, 0, 0.01); }
+  50% { background-color: rgba(225, 6, 0, 0.04); }
+  100% { background-color: rgba(225, 6, 0, 0.01); }
+}
+
+.pulse-bg {
+  animation: pulseBg 4s ease-in-out infinite;
+}
+
+.speedometer-pulse {
+  animation: explode-glow 0.8s ease-out infinite alternate;
+}
+
+@keyframes explode-glow {
+  from { box-shadow: 0 0 10px #E10600; }
+  to { box-shadow: 0 0 40px #E10600, 0 0 80px #E10600; filter: brightness(1.2); }
+}
