@@ -1,47 +1,52 @@
 import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
 
-const teamLogos = {
-  "Red Bull Racing": "https://media.formula1.com/content/dam/fom-website/teams/2023/red-bull-racing-logo.png",
-  "Mercedes": "https://media.formula1.com/content/dam/fom-website/teams/2023/mercedes-logo.png",
-  "Ferrari": "https://media.formula1.com/content/dam/fom-website/teams/2023/ferrari-logo.png",
-  "McLaren": "https://media.formula1.com/content/dam/fom-website/teams/2023/mclaren-logo.png",
-  "Aston Martin": "https://media.formula1.com/content/dam/fom-website/teams/2023/aston-martin-logo.png",
-  "Alpine": "https://media.formula1.com/content/dam/fom-website/teams/2023/alpine-logo.png",
-  "Williams": "https://media.formula1.com/content/dam/fom-website/teams/2023/williams-logo.png",
-  "AlphaTauri": "https://media.formula1.com/content/dam/fom-website/teams/2023/alphatauri-logo.png",
-  "Alfa Romeo": "https://media.formula1.com/content/dam/fom-website/teams/2023/alfa-romeo-logo.png",
-  "Haas F1 Team": "https://media.formula1.com/content/dam/fom-website/teams/2023/haas-f1-team-logo.png"
+const teamLogoMatchers = [
+  { match: ['Red Bull'], logo: 'https://media.formula1.com/content/dam/fom-website/teams/2023/red-bull-racing-logo.png' },
+  { match: ['Mercedes'], logo: 'https://media.formula1.com/content/dam/fom-website/teams/2023/mercedes-logo.png' },
+  { match: ['Ferrari'], logo: 'https://media.formula1.com/content/dam/fom-website/teams/2023/ferrari-logo.png' },
+  { match: ['McLaren'], logo: 'https://media.formula1.com/content/dam/fom-website/teams/2023/mclaren-logo.png' },
+  { match: ['Aston Martin'], logo: 'https://media.formula1.com/content/dam/fom-website/teams/2023/aston-martin-logo.png' },
+  { match: ['Alpine'], logo: 'https://media.formula1.com/content/dam/fom-website/teams/2023/alpine-logo.png' },
+  { match: ['Williams'], logo: 'https://media.formula1.com/content/dam/fom-website/teams/2023/williams-logo.png' },
+  { match: ['AlphaTauri', 'RB', 'Racing Bulls'], logo: 'https://media.formula1.com/content/dam/fom-website/teams/2023/alphatauri-logo.png' },
+  { match: ['Alfa Romeo', 'Sauber', 'Stake', 'Kick'], logo: 'https://media.formula1.com/content/dam/fom-website/teams/2023/alfa-romeo-logo.png' },
+  { match: ['Haas'], logo: 'https://media.formula1.com/content/dam/fom-website/teams/2023/haas-f1-team-logo.png' },
+];
+
+const getTeamLogo = (teamName = '') => {
+  const normalizedTeamName = teamName.toLowerCase();
+  const teamMatch = teamLogoMatchers.find(({ match }) => (
+    match.some((candidate) => normalizedTeamName.includes(candidate.toLowerCase()))
+  ));
+
+  return teamMatch?.logo || null;
 };
 
-const headshots = {
-  VER: 'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/M/MAXVER01_Max_Verstappen/maxver01.png',
-  PER: 'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/S/SERPER01_Sergio_Perez/serper01.png',
-  HAM: 'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/L/LEWHAM01_Lewis_Hamilton/lewham01.png',
-  RUS: 'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/G/GEORUS01_George_Russell/georus01.png',
-  LEC: 'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/C/CHALEC01_Charles_Leclerc/chalec01.png',
-  SAI: 'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/C/CARSAI01_Carlos_Sainz/carsai01.png',
-  NOR: 'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/L/LANNOR01_Lando_Norris/lannor01.png',
-  PIA: 'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/O/OSCPIA01_Oscar_Piastri/oscpia01.png',
-  ALO: 'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/F/FERALO01_Fernando_Alonso/feralo01.png',
-  STR: 'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/L/LANSTR01_Lance_Stroll/lanstr01.png',
-  GAS: 'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/P/PIEGAS01_Pierre_Gasly/piegas01.png',
-  OCO: 'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/E/ESTOCO01_Esteban_Ocon/estoco01.png',
-  ALB: 'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/A/ALEALB01_Alexander_Albon/alealb01.png',
-  SAR: 'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/L/LOGSAR01_Logan_Sargeant/logsar01.png',
-  TSU: 'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/Y/YUKTSU01_Yuki_Tsunoda/yuktsu01.png',
-  RIC: 'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/D/DANRIC01_Daniel_Ricciardo/danric01.png',
-  BOT: 'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/V/VALBOT01_Valtteri_Bottas/valbot01.png',
-  ZHO: 'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/G/GUAZHO01_Guanyu_Zhou/guazho01.png',
-  MAG: 'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/K/KEVMAG01_Kevin_Magnussen/kevmag01.png',
-  HUL: 'https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/N/NICHUL01_Nico_Hulkenberg/nichul01.png'
-};
-
-const getDriverImage = (code) => {
-  return headshots[code] || `https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/${code}.png`;
-};
+const getDriverInitials = (name = '') => (
+  name
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() || '')
+    .join('')
+);
 
 export default function DriverCard({ driver }) {
+  const [imageFailed, setImageFailed] = useState(false);
+
+  useEffect(() => {
+    setImageFailed(false);
+  }, [driver?.driver_code, driver?.headshot_url]);
+
   if (!driver) return null;
+
+  const positionLabel = Number.isInteger(driver.position)
+    ? `P${driver.position}`
+    : (driver.driver_number ? `#${driver.driver_number}` : '--');
+  const driverInitials = getDriverInitials(driver.name);
+  const teamLogo = getTeamLogo(driver.team);
+  const showDriverImage = Boolean(driver.headshot_url) && !imageFailed;
 
   return (
     <motion.div
@@ -59,12 +64,23 @@ export default function DriverCard({ driver }) {
       
       {/* Driver Headshot */}
       <div className="relative w-20 h-20 overflow-hidden ml-2 rounded-full border-2 border-white/10 shadow-lg shrink-0">
-        <img 
-          src={getDriverImage(driver.driver_code)} 
-          onError={(e) => { e.target.src = "https://media.formula1.com/content/dam/fom-website/drivers/2023Drivers/default.png"; }}
-          className="w-full h-full object-cover object-top scale-110" 
-          alt={driver.name} 
-        />
+        {showDriverImage ? (
+          <img
+            src={driver.headshot_url}
+            onError={() => setImageFailed(true)}
+            className="w-full h-full object-cover object-top scale-110"
+            alt={driver.name}
+          />
+        ) : (
+          <div
+            className="w-full h-full flex items-center justify-center text-xl font-black tracking-widest"
+            style={{
+              background: `linear-gradient(135deg, ${driver.color || '#E10600'} 0%, rgba(0, 0, 0, 0.95) 100%)`,
+            }}
+          >
+            {driverInitials}
+          </div>
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
       </div>
       
@@ -74,9 +90,9 @@ export default function DriverCard({ driver }) {
           {driver.name.split(' ')[0]} <br/> {driver.name.split(' ').slice(1).join(' ')}
         </h2>
         <div className="flex items-center gap-2 mt-2">
-          {teamLogos[driver.team] && (
+          {teamLogo && (
             <img 
-              src={teamLogos[driver.team]} 
+              src={teamLogo} 
               className="h-4 object-contain opacity-80" 
               alt={driver.team} 
               onError={(e) => { e.target.style.display = 'none'; }}
@@ -90,9 +106,9 @@ export default function DriverCard({ driver }) {
       
       {/* Position */}
       <div className="flex flex-col items-center justify-center p-3 bg-black/40 rounded-xl border border-white/10 shrink-0 shadow-inner group-hover:bg-white/5 transition-colors">
-        <span className="text-[10px] text-gray-500 uppercase tracking-widest mb-0.5">GRID</span>
+        <span className="text-[10px] text-gray-500 uppercase tracking-widest mb-0.5">SESSION</span>
         <span className="text-3xl font-black font-mono" style={{ color: driver.color || '#fff' }}>
-          P{driver.position}
+          {positionLabel}
         </span>
       </div>
     </motion.div>
