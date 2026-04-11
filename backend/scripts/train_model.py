@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 import sys
 
+import fastf1
 import pandas as pd
 
 BACKEND_DIR = Path(__file__).resolve().parent.parent
@@ -13,27 +14,35 @@ from services.fastf1_service import FastF1Service
 from services.ml_service import MLService, TRAINED_MODEL_PATH
 
 
-DEFAULT_SESSIONS = ["Qualifying", "Race"]
+DEFAULT_YEARS = [2024]
+DEFAULT_MAX_EVENTS = 1
+DEFAULT_SESSIONS = ["Race"]
 DATASET_PATH = DEFAULT_DATASET_PATH
 METRICS_PATH = BACKEND_DIR / "models" / "lap_time_predictor_metrics.json"
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Build a FastF1 lap dataset and train the lap-time ML model.")
-    parser.add_argument("--years", nargs="+", type=int, default=[2023, 2024], help="F1 seasons to include.")
-    parser.add_argument("--max-events", type=int, default=5, help="Maximum events per season to include.")
+    parser.add_argument("--years", nargs="+", type=int, default=DEFAULT_YEARS, help="F1 seasons to include.")
+    parser.add_argument("--max-events", type=int, default=DEFAULT_MAX_EVENTS, help="Maximum events per season to include.")
+    parser.add_argument("--all-events", action="store_true", help="Include every supported race event for each selected year.")
     parser.add_argument("--sessions", nargs="+", default=DEFAULT_SESSIONS, help="Session names to include.")
     parser.add_argument("--dataset-path", default=str(DATASET_PATH), help="CSV dataset output path.")
     parser.add_argument("--model-path", default=str(TRAINED_MODEL_PATH), help="Trained model output path.")
     parser.add_argument("--use-existing-dataset", action="store_true", help="Train from an existing CSV instead of extracting FastF1 data.")
-    parser.add_argument("--skip-telemetry", action="store_true", help="Skip per-lap telemetry aggregates while generating the CSV.")
+    parser.add_argument("--include-telemetry", action="store_true", help="Include per-lap telemetry aggregates while generating the CSV.")
+    parser.add_argument("--skip-telemetry", action="store_true", help="Deprecated compatibility flag. Telemetry is skipped by default unless --include-telemetry is used.")
     return parser.parse_args()
 
 
 def main():
+    fastf1.set_log_level("ERROR")
+
     args = parse_args()
     dataset_path = Path(args.dataset_path)
     model_path = Path(args.model_path)
+    max_events = None if args.all_events else args.max_events
+    include_telemetry = args.include_telemetry and not args.skip_telemetry
 
     f1_service = FastF1Service()
     ml_service = MLService(f1_service)
@@ -46,8 +55,8 @@ def main():
         dataset = builder.build_dataset(
             years=args.years,
             sessions=args.sessions,
-            max_events=args.max_events,
-            include_telemetry=not args.skip_telemetry,
+            max_events=max_events,
+            include_telemetry=include_telemetry,
         )
 
         if dataset.empty:

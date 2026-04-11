@@ -23,6 +23,7 @@ class FastF1Service:
         self.default_session = default_session
         self._full_sessions = {}
         self._basic_sessions = {}
+        self._lap_sessions = {}
         self._schedules = {}
 
     def _normalize_selection(self, year=None, race=None, session=None):
@@ -110,6 +111,27 @@ class FastF1Service:
             print("Session loaded.")
 
         return session_cache[key]
+
+    def load_lap_session(self, year=None, race=None, session=None, include_telemetry=False):
+        year, race, session = self._normalize_selection(year, race, session)
+        key = (year, race, session, include_telemetry)
+
+        if key not in self._lap_sessions:
+            print(
+                f"Loading lap session {year} {race} {session} "
+                f"with telemetry={include_telemetry}..."
+            )
+            loaded_session = fastf1.get_session(year, race, session)
+            loaded_session.load(
+                laps=True,
+                telemetry=include_telemetry,
+                weather=True,
+                messages=False,
+            )
+            self._lap_sessions[key] = loaded_session
+            print("Session loaded.")
+
+        return self._lap_sessions[key]
 
     def get_drivers(self, year=None, race=None, session=None):
         try:

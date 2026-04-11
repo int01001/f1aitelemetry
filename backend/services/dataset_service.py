@@ -113,11 +113,11 @@ class FastF1DatasetBuilder:
         include_telemetry: bool = True,
     ) -> pd.DataFrame:
         event_name = event["name"] if isinstance(event, dict) else event
-        selected_session = self.f1_service.load_session(
+        selected_session = self.f1_service.load_lap_session(
             year,
             event_name,
             session_name,
-            include_telemetry=True,
+            include_telemetry=include_telemetry,
         )
 
         laps = selected_session.laps
