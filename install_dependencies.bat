@@ -62,7 +62,7 @@ if errorlevel 1 (
 )
 
 echo Verifying backend Python dependencies...
-call "%BACKEND_PY%" -c "import flask, flask_cors, fastf1, pandas, numpy; print('Backend dependency check passed.')"
+call "%BACKEND_PY%" -c "import flask, flask_cors, fastf1, pandas, numpy, sklearn, joblib; print('Backend dependency check passed.')"
 if errorlevel 1 (
     echo [ERROR] Backend dependency verification failed.
     exit /b 1

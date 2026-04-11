@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 
 from services.fastf1_service import FastF1Service
+from services.ml_service import MLService
 
 
 app = Flask(__name__)
@@ -12,6 +13,7 @@ f1_service = FastF1Service(
     default_race="Italian Grand Prix",
     default_session="Race",
 )
+ml_service = MLService(f1_service)
 
 
 def get_selection_from_request():
@@ -91,6 +93,22 @@ def compare_telemetry():
                 driver2.upper(): telemetry2,
             }
         )
+    except Exception as error:
+        return jsonify({"error": str(error)}), 500
+
+
+@app.route("/api/ai-insights/<driver_code>", methods=["GET"])
+def get_ai_insights(driver_code):
+    year, race, session = get_selection_from_request()
+
+    try:
+        insights = ml_service.get_ai_insights(
+            driver_code.upper(),
+            year=year,
+            race=race,
+            session=session,
+        )
+        return jsonify(insights)
     except Exception as error:
         return jsonify({"error": str(error)}), 500
 

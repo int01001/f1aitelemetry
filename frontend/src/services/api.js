@@ -188,3 +188,23 @@ export const fetchCompareData = async (driver1, driver2, selection = DEFAULT_SEL
     };
   }
 };
+
+export const fetchAIInsights = async (driverCode, selection = DEFAULT_SELECTION) => {
+  try {
+    const response = await requestWithRetry(
+      () => axios.get(`${API_URL}/ai-insights/${driverCode}`, {
+        params: buildSelectionParams(selection),
+        timeout: 60000,
+      }),
+      1,
+    );
+    return response.data;
+  } catch (error) {
+    console.warn(`AI insights unavailable for ${driverCode}. Falling back to UI heuristics.`, error);
+    return {
+      available: false,
+      insights: [],
+      model: null,
+    };
+  }
+};

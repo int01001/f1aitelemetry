@@ -1,5 +1,8 @@
 backend/.venv/
 backend/f1cache/
+backend/data/*.csv
+backend/models/*.joblib
+backend/models/*.json
 frontend/node_modules/
 frontend/dist/
 __pycache__/

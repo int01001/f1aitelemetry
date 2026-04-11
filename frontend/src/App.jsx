@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 
 import {
+  fetchAIInsights,
   DEFAULT_SELECTION,
   fetchDrivers,
   fetchEvents,
@@ -64,6 +65,7 @@ function App() {
   const [drivers, setDrivers] = useState([]);
   const [selectedDriver, setSelectedDriver] = useState(null);
   const [telemetry, setTelemetry] = useState(null);
+  const [aiInsights, setAiInsights] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectionLoading, setSelectionLoading] = useState(true);
 
@@ -187,16 +189,21 @@ function App() {
 
     async function loadTelemetry() {
       setTelemetry(null);
+      setAiInsights(null);
       setPlaybackIndex(0);
       setIsPlaying(true);
       setIsLiveMode(true);
 
-      const telemetryData = await fetchTelemetry(selectedDriver.driver_code, activeSelection);
+      const [telemetryData, aiInsightsData] = await Promise.all([
+        fetchTelemetry(selectedDriver.driver_code, activeSelection),
+        fetchAIInsights(selectedDriver.driver_code, activeSelection),
+      ]);
       if (cancelled) {
         return;
       }
 
       setTelemetry(telemetryData);
+      setAiInsights(aiInsightsData);
     }
 
     loadTelemetry();
@@ -369,6 +376,7 @@ function App() {
             gear={currentGear}
             throttle={currentThrottle}
             isPitting={isPitting}
+            aiInsights={aiInsights}
           />
 
           <WeatherPanel />
