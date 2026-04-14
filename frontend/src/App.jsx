@@ -33,13 +33,36 @@ function App() {
 
   useEffect(() => {
     async function loadInitialData() {
-      setLoading(true);
-      const data = await fetchDrivers();
-      setDrivers(data);
-      if (data && data.length > 0) {
-        setSelectedDriver(data[0]);
+      try {
+        setLoading(true);
+        const data = await fetchDrivers();
+        console.log('Loaded drivers:', data);
+        // Validate driver data has required fields
+        const validDrivers = Array.isArray(data) ? data.filter(d => d && d.driver_code) : [];
+        console.log('Valid drivers:', validDrivers);
+        setDrivers(validDrivers);
+        if (validDrivers.length > 0) {
+          setSelectedDriver(validDrivers[0]);
+        }
+      } catch (err) {
+        console.error('Failed to load drivers:', err);
+      } finally {
+        // Fallback to mock data if no drivers loaded
+        setDrivers(prev => {
+          if (prev.length === 0) {
+            console.log('Using mock driver data as fallback');
+            const mockDrivers = [
+              { driver_code: 'VER', name: 'Max Verstappen', team: 'Red Bull Racing', color: '#3671C6', position: 1 },
+              { driver_code: 'HAM', name: 'Lewis Hamilton', team: 'Mercedes', color: '#27F4D2', position: 3 },
+              { driver_code: 'LEC', name: 'Charles Leclerc', team: 'Ferrari', color: '#E8002D', position: 5 },
+            ];
+            setSelectedDriver(mockDrivers[0]);
+            return mockDrivers;
+          }
+          return prev;
+        });
+        setLoading(false);
       }
-      setLoading(false);
     }
     loadInitialData();
   }, []);
@@ -47,8 +70,13 @@ function App() {
   useEffect(() => {
     async function loadTelemetry() {
       if (!selectedDriver) return;
+      if (!selectedDriver.driver_code) {
+        console.error('Selected driver has no driver_code:', selectedDriver);
+        return;
+      }
       setTelemetry(null);
       setPlaybackIndex(0);
+      console.log('Fetching telemetry for:', selectedDriver.driver_code);
       const data = await fetchTelemetry(selectedDriver.driver_code);
       setTelemetry(data);
     }
@@ -117,6 +145,25 @@ function App() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center text-white pb-20">
         <div className="w-16 h-16 border-t-4 border-f1red rounded-full animate-spin" />
+        <p className="mt-4 text-gray-400">Loading F1 Data...</p>
+      </div>
+    );
+  }
+
+  if (drivers.length === 0) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center text-white p-6">
+        <div className="glass p-8 rounded-xl max-w-md text-center">
+          <h2 className="text-xl font-bold text-f1red mb-4">No Driver Data Available</h2>
+          <p className="text-gray-400 mb-4">Could not load driver data from the backend.</p>
+          <p className="text-sm text-gray-500">Check browser console (F12) for details.</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="mt-6 px-4 py-2 bg-f1red rounded font-bold"
+          >
+            Retry
+          </button>
+        </div>
       </div>
     );
   }

@@ -2,6 +2,12 @@ import axios from 'axios';
 
 const API_URL = 'http://localhost:5000/api';
 
+// Create axios instance with timeout
+const api = axios.create({
+  baseURL: API_URL,
+  timeout: 10000, // 10 second timeout
+});
+
 // Fallback Mock Data: 2023 Full Grid
 const MOCK_DRIVERS = [
   { driver_code: 'VER', name: 'Max Verstappen', team: 'Red Bull Racing', color: '#3671C6', position: 1 },
@@ -41,30 +47,30 @@ const generateTelemetry = () => {
 
 export const fetchDrivers = async () => {
   try {
-    const response = await axios.get(`${API_URL}/drivers`);
+    const response = await api.get('/drivers');
     return response.data;
   } catch (error) {
-    console.warn("Backend unavailable. Using mock drivers.", error);
+    console.warn("Backend unavailable. Using mock drivers.", error.message);
     return MOCK_DRIVERS;
   }
 };
 
 export const fetchTelemetry = async (driverCode) => {
   try {
-    const response = await axios.get(`${API_URL}/telemetry/${driverCode}`);
+    const response = await api.get(`/telemetry/${driverCode}`);
     return response.data;
   } catch (error) {
-    console.warn(`Backend unavailable. Using mock telemetry for ${driverCode}.`, error);
+    console.warn(`Backend unavailable. Using mock telemetry for ${driverCode}.`, error.message);
     return { driver: driverCode, ...generateTelemetry() };
   }
 };
 
 export const fetchCompareData = async (driver1, driver2) => {
   try {
-    const response = await axios.get(`${API_URL}/compare?driver1=${driver1}&driver2=${driver2}`);
+    const response = await api.get(`/compare?driver1=${driver1}&driver2=${driver2}`);
     return response.data;
   } catch (error) {
-    console.warn("Backend unavailable. Using mock comparison.", error);
+    console.warn("Backend unavailable. Using mock comparison.", error.message);
     return {
       [driver1]: { driver: driver1, ...generateTelemetry() },
       [driver2]: { driver: driver2, ...generateTelemetry() }

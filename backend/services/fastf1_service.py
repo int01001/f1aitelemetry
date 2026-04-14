@@ -27,14 +27,22 @@ class FastF1Service:
         session = self.load_session()
         drivers = []
         for driver_id in session.drivers:
-            driver_info = session.get_driver(driver_id)
-            drivers.append({
-                "driver_code": driver_info['Abbreviation'],
-                "name": driver_info['FullName'],
-                "team": driver_info['TeamName'],
-                "color": driver_info['TeamColor'],
-                "position": driver_info['GridPosition']
-            })
+            try:
+                driver_info = session.get_driver(driver_id)
+                # Handle missing Abbreviation by using driver number as fallback
+                abbrev = driver_info.get('Abbreviation', str(driver_id))
+                if not abbrev or pd.isna(abbrev):
+                    abbrev = str(driver_id)
+                drivers.append({
+                    "driver_code": abbrev,
+                    "name": driver_info.get('FullName', f"Driver {driver_id}"),
+                    "team": driver_info.get('TeamName', 'Unknown'),
+                    "color": driver_info.get('TeamColor', '#666666'),
+                    "position": driver_info.get('GridPosition', 0)
+                })
+            except Exception as e:
+                print(f"Error loading driver {driver_id}: {e}")
+                continue
         return drivers
 
     def get_laps(self, driver_code):
