@@ -1,0 +1,6 @@
+# Ignore ML models
+*.pkl
+*.h5
+*.pt
+*.joblib
+models/
