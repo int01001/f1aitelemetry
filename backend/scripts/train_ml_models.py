@@ -40,6 +40,7 @@ DEFAULT_DATASET_CANDIDATES = [
     DATA_DIR / "fastf1_2021_2024_all_race_laps.csv",
     DATA_DIR / "fastf1_2024_all_race_laps.csv",
     DATA_DIR / "fastf1_ml_dataset.csv",
+    DATA_DIR / "fastf1dataset.csv",
 ]
 
 RICH_NUMERIC_FEATURES = [

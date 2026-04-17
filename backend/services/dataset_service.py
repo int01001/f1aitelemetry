@@ -6,7 +6,9 @@ from typing import Any
 import pandas as pd
 
 
-DEFAULT_DATASET_PATH = Path(__file__).resolve().parent.parent / "data" / "fastf1_ml_dataset.csv"
+DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+DEFAULT_DATASET_PATH = DATA_DIR / "fastf1_ml_dataset.csv"
+LEGACY_DATASET_PATH = DATA_DIR / "fastf1dataset.csv"
 
 
 class FastF1DatasetBuilder:

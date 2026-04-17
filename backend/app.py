@@ -113,6 +113,22 @@ def get_ai_insights(driver_code):
         return jsonify({"error": str(error)}), 500
 
 
+@app.route("/api/predict-lap-time/<driver_code>", methods=["GET"])
+def predict_lap_time(driver_code):
+    year, race, session = get_selection_from_request()
+
+    try:
+        prediction = ml_service.predict_next_lap_time(
+            driver_code.upper(),
+            year=year,
+            race=race,
+            session=session,
+        )
+        return jsonify(prediction)
+    except Exception as error:
+        return jsonify({"error": str(error)}), 500
+
+
 if __name__ == "__main__":
     print("Starting Flask server on http://localhost:5000")
     app.run(debug=True, port=5000)

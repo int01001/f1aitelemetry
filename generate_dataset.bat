@@ -21,9 +21,9 @@ if not exist "%GENERATOR%" (
 
 if "%~1"=="" (
     echo No arguments provided.
-    echo Generating default 2021-2024 all Race-session lap dataset...
+    echo Generating default 2018-2025 all Race-session lap dataset...
     echo.
-    call "%BACKEND_PY%" "%GENERATOR%" --years 2021 2022 2023 2024 --all-events --sessions Race --output "backend\data\fastf1_2021_2024_all_race_laps.csv"
+    call "%BACKEND_PY%" "%GENERATOR%" --years 2018 2019 2020 2021 2022 2023 2024 2025 --all-events --sessions Race --output "backend\data\fastf1_2018_2025_all_race_laps.csv"
 ) else (
     call "%BACKEND_PY%" "%GENERATOR%" %*
 )

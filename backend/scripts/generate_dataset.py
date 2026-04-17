@@ -6,7 +6,7 @@ import fastf1
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from services.dataset_service import DEFAULT_DATASET_PATH, FastF1DatasetBuilder
+from services.dataset_service import DEFAULT_DATASET_PATH, LEGACY_DATASET_PATH, FastF1DatasetBuilder
 from services.fastf1_service import FastF1Service
 
 
@@ -65,8 +65,15 @@ def main():
     output_path.parent.mkdir(parents=True, exist_ok=True)
     dataset.to_csv(output_path, index=False)
 
+    legacy_dataset_written = False
+    if output_path.resolve() == DEFAULT_DATASET_PATH.resolve():
+        dataset.to_csv(LEGACY_DATASET_PATH, index=False)
+        legacy_dataset_written = True
+
     print("\nDataset generation complete.")
     print(f"Dataset: {output_path}")
+    if legacy_dataset_written:
+        print(f"Legacy dataset alias: {LEGACY_DATASET_PATH}")
     print(f"Rows: {len(dataset)}")
     print(f"Columns: {len(dataset.columns)}")
     print(", ".join(dataset.columns))

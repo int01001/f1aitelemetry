@@ -63,6 +63,25 @@ export default function AIInsights({ speed, gear, throttle, isPitting, aiInsight
         </div>
       )}
 
+      {aiInsights?.available && typeof aiInsights.predicted_next_lap_time === 'number' && (
+        <div className="mb-4 grid grid-cols-3 gap-2">
+          <div className="rounded bg-black/30 border border-blue-500/20 p-2.5">
+            <p className="text-[10px] text-gray-500 font-mono uppercase tracking-wider">Current</p>
+            <p className="text-sm text-white font-semibold mt-1">{aiInsights.current_lap_time.toFixed(3)}s</p>
+          </div>
+          <div className="rounded bg-black/30 border border-emerald-500/20 p-2.5">
+            <p className="text-[10px] text-gray-500 font-mono uppercase tracking-wider">Predicted</p>
+            <p className="text-sm text-emerald-300 font-semibold mt-1">{aiInsights.predicted_next_lap_time.toFixed(3)}s</p>
+          </div>
+          <div className="rounded bg-black/30 border border-amber-500/20 p-2.5">
+            <p className="text-[10px] text-gray-500 font-mono uppercase tracking-wider">Delta</p>
+            <p className="text-sm text-amber-300 font-semibold mt-1">
+              {aiInsights.lap_delta > 0 ? '+' : ''}{aiInsights.lap_delta.toFixed(3)}s
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-col gap-3">
         {insightsList.map((insight) => {
           let borderColor = 'border-blue-500';

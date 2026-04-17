@@ -9,7 +9,7 @@ import pandas as pd
 BACKEND_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(BACKEND_DIR))
 
-from services.dataset_service import DEFAULT_DATASET_PATH, FastF1DatasetBuilder
+from services.dataset_service import DEFAULT_DATASET_PATH, LEGACY_DATASET_PATH, FastF1DatasetBuilder
 from services.fastf1_service import FastF1Service
 from services.ml_service import MLService, TRAINED_MODEL_PATH
 
@@ -64,6 +64,8 @@ def main():
 
         dataset_path.parent.mkdir(parents=True, exist_ok=True)
         dataset.to_csv(dataset_path, index=False)
+        if dataset_path.resolve() == DEFAULT_DATASET_PATH.resolve():
+            dataset.to_csv(LEGACY_DATASET_PATH, index=False)
 
     artifacts = ml_service.train_from_frame(dataset, scope="offline CSV dataset")
     ml_service.save_artifacts(artifacts, model_path)

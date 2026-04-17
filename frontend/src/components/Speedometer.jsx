@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 export default function Speedometer({ speed, raceMode }) {
   const maxSpeed = 350;
   const progress = Math.min(Math.max(speed / maxSpeed, 0), 1);
+  const displaySpeed = Math.round(speed);
   
   const radius = 80;
   const circumference = 2 * Math.PI * radius;
@@ -69,14 +70,14 @@ export default function Speedometer({ speed, raceMode }) {
       {/* Speed Text */}
       <div className="absolute top-[65%] text-center flex flex-col items-center z-20">
         <motion.span
-          key={isInsaneSpeed ? 'insane' : speed} // Remount occasionally
+          key={isInsaneSpeed ? 'insane' : displaySpeed} // Remount occasionally
           initial={{ scale: 0.95 }}
           animate={{ scale: isInsaneSpeed ? [1, 1.1, 1] : 1 }}
           transition={isInsaneSpeed ? { repeat: Infinity, duration: 0.5 } : {}}
           className="text-6xl font-black font-mono tracking-tighter"
           style={{ color: '#fff', textShadow: `0 0 ${isInsaneSpeed ? '25px' : '15px'} ${currentColor}` }}
         >
-          {speed}
+          {displaySpeed}
         </motion.span>
         <span className="text-gray-400 text-xs font-bold tracking-[0.3em] mt-1 lg:mt-0 opacity-80 uppercase">km/h</span>
       </div>

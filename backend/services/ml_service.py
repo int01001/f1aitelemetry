@@ -222,31 +222,8 @@ class MLService:
             self._artifacts_by_session[key] = self._train_model_for_session(year, race, session)
         return self._artifacts_by_session[key]
 
-    def get_ai_insights(self, driver_code, year=None, race=None, session=None):
-        year, race, session = self.f1_service._normalize_selection(year, race, session)
-        laps = self.f1_service.get_laps(driver_code, year=year, race=race, session=session)
-        if not laps:
-            return {
-                "driver": driver_code,
-                "available": False,
-                "message": "No lap data available for AI predictions in this session.",
-            }
-
-        valid_laps = [
-            lap for lap in laps
-            if lap.get("lap_time") and lap.get("sector1") and lap.get("sector2") and lap.get("sector3")
-        ]
-        if not valid_laps:
-            return {
-                "driver": driver_code,
-                "available": False,
-                "message": "This session does not have enough valid lap data for model inference yet.",
-            }
-
-        latest_lap = valid_laps[-1]
-        current_lap_time = float(latest_lap["lap_time"])
-        artifacts = self._load_or_train_model(year, race, session)
-        feature_row = pd.DataFrame(
+    def _build_feature_row(self, year, race, session, driver_code, latest_lap) -> pd.DataFrame:
+        return pd.DataFrame(
             [
                 {
                     "year": year,
@@ -263,8 +240,65 @@ class MLService:
             ]
         )
 
+    def predict_next_lap_time(self, driver_code, year=None, race=None, session=None):
+        year, race, session = self.f1_service._normalize_selection(year, race, session)
+        laps = self.f1_service.get_laps(driver_code, year=year, race=race, session=session)
+        if not laps:
+            return {
+                "driver": driver_code,
+                "available": False,
+                "message": "No lap data available for prediction in this session.",
+            }
+
+        valid_laps = [
+            lap for lap in laps
+            if lap.get("lap_time") and lap.get("sector1") and lap.get("sector2") and lap.get("sector3")
+        ]
+        if not valid_laps:
+            return {
+                "driver": driver_code,
+                "available": False,
+                "message": "This session does not have enough valid lap data for model inference yet.",
+            }
+
+        latest_lap = valid_laps[-1]
+        current_lap_time = float(latest_lap["lap_time"])
+        artifacts = self._load_or_train_model(year, race, session)
+        feature_row = self._build_feature_row(year, race, session, driver_code, latest_lap)
         predicted_lap_time = float(artifacts.pipeline.predict(feature_row)[0])
         lap_delta = round(predicted_lap_time - current_lap_time, 3)
+
+        return {
+            "driver": driver_code,
+            "available": True,
+            "year": year,
+            "race": race,
+            "session": session,
+            "current_lap_time": round(current_lap_time, 3),
+            "predicted_next_lap_time": round(predicted_lap_time, 3),
+            "lap_delta": lap_delta,
+            "latest_lap_number": latest_lap.get("lap_number"),
+            "latest_lap_compound": latest_lap.get("compound") or "UNKNOWN",
+            "latest_tyre_life": latest_lap.get("tyre_life"),
+            "model": {
+                "name": "RandomForestRegressor",
+                "training_rows": artifacts.training_rows,
+                "mae_seconds": artifacts.metrics["mae_seconds"],
+                "r2_score": artifacts.metrics["r2_score"],
+                "evaluation_rows": artifacts.metrics["evaluation_rows"],
+                "target": artifacts.metrics["target"],
+                "scope": artifacts.scope,
+            },
+        }
+
+    def get_ai_insights(self, driver_code, year=None, race=None, session=None):
+        prediction = self.predict_next_lap_time(driver_code, year=year, race=race, session=session)
+        if not prediction.get("available"):
+            return prediction
+
+        predicted_lap_time = prediction["predicted_next_lap_time"]
+        current_lap_time = prediction["current_lap_time"]
+        lap_delta = prediction["lap_delta"]
 
         if lap_delta < -0.25:
             pace_status = "improving"
@@ -276,7 +310,7 @@ class MLService:
             pace_status = "stable"
             pace_summary = "The session model expects the pace to stay close to the current lap."
 
-        tyre_life = latest_lap.get("tyre_life") or 0
+        tyre_life = prediction.get("latest_tyre_life") or 0
         if tyre_life >= 18:
             tyre_risk = "high"
         elif tyre_life >= 10:
@@ -293,7 +327,7 @@ class MLService:
             {
                 "type": "warning" if tyre_risk != "low" else "info",
                 "title": "Tyre Risk",
-                "text": f"Tyre life is {tyre_life} laps on {latest_lap.get('compound', 'UNKNOWN')} tyres, giving a {tyre_risk} degradation risk.",
+                "text": f"Tyre life is {tyre_life} laps on {prediction.get('latest_lap_compound', 'UNKNOWN')} tyres, giving a {tyre_risk} degradation risk.",
             },
             {
                 "type": "critical" if pace_status == "slowing" else "info",
@@ -302,22 +336,7 @@ class MLService:
             },
         ]
 
-        return {
-            "driver": driver_code,
-            "available": True,
-            "current_lap_time": current_lap_time,
-            "predicted_next_lap_time": round(predicted_lap_time, 3),
-            "lap_delta": lap_delta,
-            "pace_status": pace_status,
-            "tyre_risk": tyre_risk,
-            "model": {
-                "name": "RandomForestRegressor",
-                "training_rows": artifacts.training_rows,
-                "mae_seconds": artifacts.metrics["mae_seconds"],
-                "r2_score": artifacts.metrics["r2_score"],
-                "evaluation_rows": artifacts.metrics["evaluation_rows"],
-                "target": artifacts.metrics["target"],
-                "scope": artifacts.scope,
-            },
-            "insights": insights,
-        }
+        prediction["pace_status"] = pace_status
+        prediction["tyre_risk"] = tyre_risk
+        prediction["insights"] = insights
+        return prediction
